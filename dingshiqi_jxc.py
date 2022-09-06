@@ -24,7 +24,7 @@ def short_string(shortStr, len3):
 
 def job():
     product = "进销存"
-    conn = pymysql.connect(host="rm-m5eakra35e59hz3if8o.mysql.rds.aliyuncs.com", user="zentao_wangle",
+    conn = pymysql.connect(host="rm-m5eakra35e59hz3if.mysql.rds.aliyuncs.com", user="zentao_wangle",
                            password="Ae26e6fc", database="zentao_pm", charset="utf8")
     cursor = conn.cursor()
     sql_one = '''Select zentao_pm.zt_bug.id,
