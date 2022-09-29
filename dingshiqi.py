@@ -43,8 +43,11 @@ def Request(path,x):
     print(r)
 
 def job():
-    path = "/cgi-bin/webhook/send?key=5115e492-67ea-4d23-897f-bf3597f183d0"
-    #path = "/cgi-bin/webhook/send?key=90131ff2-6df4-45fb-82a6-fe74a3f1e44d"
+    path = "/cgi-bin/webhook/send?key=5115e492-67ea-4d23-897f-bf3597f183d0" #crm
+    # path = "/cgi-bin/webhook/send?key=90131ff2-6df4-45fb-82a6-fe74a3f1e44d" #调试
+    # path = "/cgi-bin/webhook/send?key=0e1b6833-ecf2-4752-aa68-53adac9c7adb" #jxc
+    # path="/cgi-bin/webhook/send?key=68c5a730-dc91-48d3-95ed-cf97c7fb33d2" #skb
+    #path = "/cgi-bin/webhook/send?key=88d98d7e-7d78-44ed-a512-930051ce747c"  # SCRM
     product = "crm"
     # conn = pymysql.connect(host="rm-m5eakra35e59hz3if8o.mysql.rds.aliyuncs.com", user="zentao_wangle",password="Ae26e6fc", database="zentao_pm", charset="utf8")#本地
     conn = pymysql.connect(host="rm-m5eakra35e59hz3if.mysql.rds.aliyuncs.com", user="zentao_wangle",password="Ae26e6fc", database="zentao_pm", charset="utf8")
