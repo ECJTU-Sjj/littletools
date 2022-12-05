@@ -53,7 +53,7 @@ def job():
     path = "/cgi-bin/webhook/send?key=0e1b6833-ecf2-4752-aa68-53adac9c7adb" #jxc
     #path = "/cgi-bin/webhook/send?key=90131ff2-6df4-45fb-82a6-fe74a3f1e44d"  # 调试
     product = "进销存"
-    # conn = pymysql.connect(host="rm-m5eakra35e59hz3if8o.mysql.rds.aliyuncs.com", user="zentao_wangle",password="Ae26e6fc", database="zentao_pm", charset="utf8")#本地
+    #conn = pymysql.connect(host="rm-m5eakra35e59hz3if8o.mysql.rds.aliyuncs.com", user="zentao_wangle",password="Ae26e6fc", database="zentao_pm", charset="utf8")#本地
     conn = pymysql.connect(host="rm-m5eakra35e59hz3i.mysql.rds.aliyuncs.com", user="zentao_wangle",password="Ae26e6fc", database="zentao_pm", charset="utf8")
 
 
