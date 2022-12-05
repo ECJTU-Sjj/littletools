@@ -46,7 +46,7 @@ def Request(path,x):
 def job():
     # path = "/cgi-bin/webhook/send?key=5115e492-67ea-4d23-897f-bf3597f183d0" #crm
     #path = "/cgi-bin/webhook/send?key=90131ff2-6df4-45fb-82a6-fe74a3f1e44d" #调试
-    path="/cgi-bin/webhook/send?key=80f90571-47c0-4d6c-b0d5-93b37b105a70" #自己调试
+    #path="/cgi-bin/webhook/send?key=80f90571-47c0-4d6c-b0d5-93b37b105a70" #自己调试
     #path="/cgi-bin/webhook/send?key=cdf257c2-22cb-43aa-a3b5-575637435395" #技术支持
     # path = "/cgi-bin/webhook/send?key=0e1b6833-ecf2-4752-aa68-53adac9c7adb" #jxc
     # path="/cgi-bin/webhook/send?key=68c5a730-dc91-48d3-95ed-cf97c7fb33d2" #skb
