@@ -52,11 +52,38 @@ def job():
     # path="/cgi-bin/webhook/send?key=68c5a730-dc91-48d3-95ed-cf97c7fb33d2" #skb
     #path = "/cgi-bin/webhook/send?key=88d98d7e-7d78-44ed-a512-930051ce747c"  # SCRM
     product = "crm"
-    conn = pymysql.connect(host="rm-m5eakra35e59hz3if8o.mysql.rds.aliyuncs.com", user="zentao_wangle",password="Ae26e6fc", database="zentao_pm", charset="utf8")#本地
-    #conn = pymysql.connect(host="rm-m5eakra35e59hz3if.mysql.rds.aliyuncs.com", user="zentao_wangle",password="Ae26e6fc", database="zentao_pm", charset="utf8")
+    #conn = pymysql.connect(host="rm-m5eakra35e59hz3if8o.mysql.rds.aliyuncs.com", user="zentao_wangle",password="Ae26e6fc", database="zentao_pm", charset="utf8")#本地
+    conn = pymysql.connect(host="rm-m5eakra35e59hz3if.mysql.rds.aliyuncs.com", user="zentao_wangle",password="Ae26e6fc", database="zentao_pm", charset="utf8")
 
     cursor = conn.cursor()
-    sql_one = '''SELECT a.id, a.title, a.severity, a.type, a.STATUS, a.realname, a.openedDate, TIMESTAMPDIFF(HOUR,a.openedDate,now()),a.NAME, IF (b.actor='ts001','已备注','未备注') FROM (SELECT zentao_pm.zt_bug.id, zentao_pm.zt_bug.title,zentao_pm.zt_bug.severity,zentao_pm.zt_bug.type,zentao_pm.zt_bug.STATUS,zentao_pm.zt_user.realname,zentao_pm.zt_bug.openedDate,zentao_pm.zt_product.name FROM ( zentao_pm.zt_bug RIGHT JOIN zentao_pm.zt_product ON zentao_pm.zt_bug.product = zentao_pm.zt_product.id ) RIGHT JOIN zentao_pm.zt_user ON zentao_pm.zt_user.account = zentao_pm.zt_bug.assignedTo WHERE zentao_pm.zt_product.NAME = '%s' AND zentao_pm.zt_bug.deleted = 1 AND zentao_pm.zt_user.id = 651 AND zentao_pm.zt_bug.STATUS != "closed" ORDER BY zentao_pm.zt_bug.severity ASC, zentao_pm.zt_bug.openedDate ASC, zentao_pm.zt_bug.id ASC ) a left JOIN zentao_pm.zt_action b ON a.id = b.objectID WHERE b.objectType = 'bug' AND b.action = 'commented' GROUP BY a.id ORDER BY date DESC''' % (product)
+    sql_one = '''
+SELECT
+    zentao_pm.zt_bug.id,
+    zentao_pm.zt_bug.title,
+    zentao_pm.zt_bug.severity,
+    zentao_pm.zt_bug.type,
+    zentao_pm.zt_bug.STATUS,
+    zentao_pm.zt_user.realname,
+    zentao_pm.zt_bug.openedDate,
+    TIMESTAMPDIFF(
+			HOUR,
+			zentao_pm.zt_bug.openedDate,
+		now()),
+    zentao_pm.zt_product.NAME ,
+    (SELECT IF (actor='ts001','已备注','未备注') from zentao_pm.zt_action where zentao_pm.zt_action.objectID=zentao_pm.zt_bug.id  and action='commented' ORDER BY date desc limit 1),
+    zentao_pm.zt_bug.resolution
+FROM
+    ( zentao_pm.zt_bug RIGHT JOIN zentao_pm.zt_product ON zentao_pm.zt_bug.product = zentao_pm.zt_product.id )
+    RIGHT JOIN zentao_pm.zt_user ON zentao_pm.zt_user.account = zentao_pm.zt_bug.assignedTo 
+WHERE
+    zentao_pm.zt_product.NAME = '%s' 
+    AND zentao_pm.zt_bug.deleted = 1 
+    AND zentao_pm.zt_user.id = 651 
+    AND zentao_pm.zt_bug.STATUS != "closed" 
+ORDER BY
+    zentao_pm.zt_bug.severity ASC,
+    zentao_pm.zt_bug.openedDate ASC,
+    zentao_pm.zt_bug.id ASC ''' % (product)
 
     # and  (((zentao_pm.zt_bug.severity =1  or zentao_pm.zt_bug.severity =2 )
     # and timediff(now(), zentao_pm.zt_bug.openedDate)>=12)
@@ -81,7 +108,11 @@ def job():
             staus = str(i[4])
             severity = str(i[2])
             '''严重程度'''
-            action = str(i[9])
+            resolution=str(i[10])
+            if str(i[9])=='None':
+                action ='未备注'
+            else:
+                action = str(i[9])
             name = i[1].replace('[','').replace(']','')
             name = short_string(name, 21)
             '''标题,通过short_string省略函数进行省略,防止所有bug字数过长，企微机器人接口字数限制接口报错'''
@@ -89,21 +120,21 @@ def job():
             '''L1未超时，L2已超时，同时L1/L2区分1&2级 、3&4&5级bug，一二级根据机器人接口，添加颜色提醒标识'''
             if (severity == "1" or severity == "2") and staus == "resolved" :
                 day = str(format(-(i[7] / 24 - 0.5), '.2f'))
-                a = "[bug#" + bug + " " + name + "]" + "(http://zentao.weiwenjia.com/bug-view-" + bug + ".html)\n" + "<font color=\"warning\">"   + " " + day + "天后超时"+" bug状态：已解决"+ action+"</font>"
+                a = "[bug#" + bug + " " + name + "]" + "(http://zentao.weiwenjia.com/bug-view-" + bug + ".html)\n" + "<font color=\"warning\">"   + " " + day + "天后超时"+" bug状态：已解决"+' '+resolution+' '+ action+"</font>"
                 L2.append(a)
 
             elif (severity == "1" or severity == "2") and staus != "resolved" :
                 day = str(format(i[7] / 24 - 0.5, '.2f'))
-                b = "[bug#" + bug + " " + name + "]" + "(http://zentao.weiwenjia.com/bug-view-" + bug + ".html)\n" + "<font color=\"warning\">"   + " 超时" + day + "天"+" bug状态:"+staus+ action+ "</font>"
+                b = "[bug#" + bug + " " + name + "]" + "(http://zentao.weiwenjia.com/bug-view-" + bug + ".html)\n" + "<font color=\"warning\">"   + " 超时" + day + "天"+" bug状态:"+staus+' '+ action+ "</font>"
                 L1.append(b)
 
             elif (severity != "1" and severity != "2") and staus == "resolved" :
                 day = str(format(-(i[7] / 24 - 14), '.2f'))
-                c = "[bug#" + bug + " " + name + "]" + "(http://zentao.weiwenjia.com/bug-view-" + bug + ".html)\n"  + " " + day + "天后超时"+" bug状态：已解决"+ action
+                c = "[bug#" + bug + " " + name + "]" + "(http://zentao.weiwenjia.com/bug-view-" + bug + ".html)\n"  + " " + day + "天后超时"+" bug状态：已解决"+' '+resolution+' '+ action
                 L2.append(c)
             elif (severity != "1" and severity != "2") and staus != "resolved" :
                 day = str(format(i[7] / 24 - 14, '.2f'))
-                d = "[bug#" + bug + " " + name + "]" + "(http://zentao.weiwenjia.com/bug-view-" + bug + ".html)\n"  + " 超时" + day + "天"+" bug状态:"+staus+ action
+                d = "[bug#" + bug + " " + name + "]" + "(http://zentao.weiwenjia.com/bug-view-" + bug + ".html)\n"  + " 超时" + day + "天"+" bug状态:"+staus+' '+ action
                 L1.append(d)
 
         # namelist = []
