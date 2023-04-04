@@ -71,7 +71,7 @@ class CheckInterface:
         }
         self.report_ids = []
         self.robot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=eb6d6b95-fa37-4057-886f-5e831e2702e3"
-        # self.robot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=44045ec1-60c2-41b6-9fa9-9742e8b3b181"
+        self.robot_url_success = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=44045ec1-60c2-41b6-9fa9-9742e8b3b181"
         self.header = {
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
         }
@@ -555,7 +555,7 @@ class CheckInterface:
             }
             # 没有报错只有上午9点的检测才提示，其他时间不提示。
             if datetime.datetime.now().hour == 9:
-                requests.post(self.robot_url, data=json.dumps(markdown_data))
+                requests.post(self.robot_url_success, data=json.dumps(markdown_data))
             return
         # 独立版 报错
         if len(self.error_logs["lixiaoyun"]) > 0:
