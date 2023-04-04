@@ -79,7 +79,7 @@ class CheckInterface:
             'Content-Type': 'application/json'
         }
 
-    def get_client_token_and_snippet_id(self, report_id, report_name):
+    def get_client_token_and_snippet_id(self, report_id, report_name, **user_info):
         """
         获取请求报表的client_token 和 snippet_uid
         :param report_name: 报表名称
@@ -87,8 +87,9 @@ class CheckInterface:
         :return: res_info
         """
         url = "https://cloud-service.lixiaoyun.com/report/api/v1/notebooks/{}/share?tag=prod".format(report_id)
-        res = requests.get(url=url, headers=self.header, timeout=10)
         try:
+            res = requests.get(url=url, headers=self.header, timeout=10)
+
             # 获取请求报表的client_token 和 snippet_uid
             res_info = {
                 "client_token": res.json()["data"]["client_token"],
@@ -96,8 +97,12 @@ class CheckInterface:
                 "report_name": report_name
             }
             return res_info
-        except:
+        except Exception as E:
+            # 请求异常的时候 获取报错信息
+            self.error_logs[user_info["platform"]].append(
+                "<font color='red'>{}</font>, 报错信息:{}".format(report_name, str(E)[:60].replace('\n', '')))
             return None
+
 
     def report_check(self, snippet_uid, client_token, report_name, **user_info):
         """
@@ -518,7 +523,7 @@ class CheckInterface:
         body["low_code_params"].update({"user_token": user_info["user_token"]})
         try:
             # 获取返回值
-            res = requests.post(url=url, headers=self.header, json=body)
+            res = requests.post(url=url, headers=self.header, json=body, timeout=10)
             # 如果接口success 值 是False 就获取报错 存到self.error_logs 里面
             if res.json()['success'] is False:
                 self.error_logs[user_info["platform"]].append(
@@ -538,9 +543,11 @@ class CheckInterface:
         for user_info in self.user_infos:
             print(user_info)
             for li in lis:
-                res_info = self.get_client_token_and_snippet_id(li["report_id"], li["report_name"])
-                self.report_check(res_info["snippet_uid"], res_info["client_token"], res_info["report_name"],
-                                  **user_info)
+                res_info = self.get_client_token_and_snippet_id(li["report_id"], li["report_name"], **user_info)
+                # 如果获取接口失败就不再请求
+                if res_info is not None:
+                    self.report_check(res_info["snippet_uid"], res_info["client_token"], res_info["report_name"],
+                                      **user_info)
         print(self.error_logs)
         # error_log 都等于0 即为没有报错
         if len(self.error_logs["lixiaoyun"]) == 0 and len(self.error_logs["dingtalk"]) == 0 and len(
