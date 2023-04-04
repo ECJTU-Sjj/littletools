@@ -536,12 +536,12 @@ class CheckInterface:
         """
         # 循环遍历每个环境的请求
         for user_info in self.user_infos:
-
+            print(user_info)
             for li in lis:
                 res_info = self.get_client_token_and_snippet_id(li["report_id"], li["report_name"])
                 self.report_check(res_info["snippet_uid"], res_info["client_token"], res_info["report_name"],
                                   **user_info)
-
+        print(self.error_logs)
         # error_log 都等于0 即为没有报错
         if len(self.error_logs["lixiaoyun"]) == 0 and len(self.error_logs["dingtalk"]) == 0 and len(
                 self.error_logs["wxwork"]) == 0:
