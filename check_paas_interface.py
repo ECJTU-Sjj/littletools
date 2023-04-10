@@ -73,7 +73,8 @@ class CheckInterface:
         self.robot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=eb6d6b95-fa37-4057-886f-5e831e2702e3"
         self.robot_url_success = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=44045ec1-60c2-41b6-9fa9-9742e8b3b181"
         self.header = {
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
+            'Connection': 'close'
         }
         self.md_header = {
             'Content-Type': 'application/json'
@@ -88,7 +89,7 @@ class CheckInterface:
         """
         url = "https://cloud-service.lixiaoyun.com/report/api/v1/notebooks/{}/share?tag=prod".format(report_id)
         try:
-            res = requests.get(url=url, headers=self.header, timeout=10)
+            res = requests.get(url=url, headers=self.header, timeout=(10, 5))
 
             # 获取请求报表的client_token 和 snippet_uid
             res_info = {
@@ -98,11 +99,14 @@ class CheckInterface:
             }
             return res_info
         except Exception as E:
+            print("/############一条报错信息#############")
+            print(report_name)
+            print(E)
+            print("############一条报错信息#############/")
             # 请求异常的时候 获取报错信息
             self.error_logs[user_info["platform"]].append(
                 "<font color='red'>{}</font>, 报错信息:{}".format(report_name, str(E)[:60].replace('\n', '')))
             return None
-
 
     def report_check(self, snippet_uid, client_token, report_name, **user_info):
         """
@@ -523,13 +527,22 @@ class CheckInterface:
         body["low_code_params"].update({"user_token": user_info["user_token"]})
         try:
             # 获取返回值
-            res = requests.post(url=url, headers=self.header, json=body, timeout=10)
+            res = requests.post(url=url, headers=self.header, json=body, timeout=(10, 5))
             # 如果接口success 值 是False 就获取报错 存到self.error_logs 里面
             if res.json()['success'] is False:
                 self.error_logs[user_info["platform"]].append(
                     "<font color='red'>{}</font>, 报错信息:{}".format(report_name,
-                                                                       res.json()['error'][:60].replace('\n', '')))
+                                                                  res.json()['error'][:60].replace('\n', '')))
+                print("/############一条报错信息#############")
+                print(report_name)
+                print(res.json()['error'])
+                print("############一条报错信息#############/")
+
         except Exception as E:
+            print("/############一条报错信息#############")
+            print(report_name)
+            print(E)
+            print("############一条报错信息#############/")
             # 请求异常的时候 获取报错信息
             self.error_logs[user_info["platform"]].append(
                 "<font color='red'>{}</font>, 报错信息:{}".format(report_name, str(E)[:60].replace('\n', '')))
