@@ -467,7 +467,12 @@ class CheckInterface:
                     "user_ids": [],
                     "department_id": 0,
                     "year": "2023",
-
+                    "time_type": "month",
+                    "sign_date_type": "year",
+                    "sign_date": [
+                        "2023-01-01",
+                        "2023-12-31"
+                    ]
                 },
                 "meta": []
             }
